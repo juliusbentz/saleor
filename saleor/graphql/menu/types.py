@@ -7,6 +7,8 @@ from graphene import relay
 
 from ...menu import models
 from ..core.connection import CountableDjangoObjectType
+from ..translations.resolvers import resolve_translation
+from ..translations.types import MenuItemTranslation
 
 
 def prefetch_menus(info, *args, **kwargs):
@@ -41,6 +43,9 @@ class MenuItem(CountableDjangoObjectType):
     children = gql_optimizer.field(
         graphene.List(lambda: MenuItem), model_field='children')
     url = graphene.String(description='URL to the menu item.')
+    translation = graphene.Field(
+        MenuItemTranslation, language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent("""Represents a single item of the related menu.

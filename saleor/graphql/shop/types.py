@@ -18,6 +18,8 @@ from ..core.types.common import (
     CountryDisplay, LanguageDisplay, PermissionDisplay)
 from ..menu.types import Menu
 from ..product.types import Collection
+from ..translations.resolvers import resolve_translation
+from ..translations.types import ShopTranslation
 from ..utils import format_permissions_for_display
 from .enums import AuthorizationKeyType
 
@@ -105,6 +107,9 @@ class Shop(graphene.ObjectType):
     track_inventory_by_default = graphene.Boolean(
         description='Enable inventory tracking')
     default_weight_unit = WeightUnitsEnum(description='Default weight unit')
+    translation = graphene.Field(
+        ShopTranslation, language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent('''

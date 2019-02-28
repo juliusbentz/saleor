@@ -7,11 +7,17 @@ from graphene import relay
 from ...shipping import models
 from ..core.connection import CountableDjangoObjectType
 from ..core.types import CountryDisplay, MoneyRange
+from ..translations.resolvers import resolve_translation
+from ..translations.types import ShippingMethodTranslation
 from .enums import ShippingMethodTypeEnum
 
 
 class ShippingMethod(CountableDjangoObjectType):
     type = ShippingMethodTypeEnum(description='Type of the shipping method.')
+    translation = graphene.Field(
+        ShippingMethodTranslation,
+        language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent("""

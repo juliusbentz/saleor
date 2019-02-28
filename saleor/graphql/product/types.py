@@ -19,6 +19,10 @@ from ..core.connection import CountableDjangoObjectType
 from ..core.enums import ReportingPeriod, TaxRateType
 from ..core.fields import PrefetchingConnectionField
 from ..core.types import Money, MoneyRange, TaxedMoney, TaxedMoneyRange
+from ..translations.resolvers import resolve_translation
+from ..translations.types import (
+    AttributeTranslation, AttributeValueTranslation, CategoryTranslation,
+    CollectionTranslation, ProductTranslation, ProductVariantTranslation)
 from ..utils import get_database_id, reporting_period_to_date
 from .descriptions import AttributeDescriptions, AttributeValueDescriptions
 from .enums import AttributeValueType, OrderDirection, ProductOrderField
@@ -76,6 +80,10 @@ class AttributeValue(CountableDjangoObjectType):
     slug = graphene.String(description=AttributeValueDescriptions.SLUG)
     type = AttributeValueType(description=AttributeValueDescriptions.TYPE)
     value = graphene.String(description=AttributeValueDescriptions.VALUE)
+    translation = graphene.Field(
+        AttributeValueTranslation,
+        language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = 'Represents a value of an attribute.'
@@ -94,6 +102,9 @@ class Attribute(CountableDjangoObjectType):
         graphene.List(
             AttributeValue, description=AttributeDescriptions.VALUES),
         model_field='values')
+    translation = graphene.Field(
+        AttributeTranslation, language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent("""Custom attribute of a product. Attributes can be
@@ -159,6 +170,10 @@ class ProductVariant(CountableDjangoObjectType):
             lambda: ProductImage,
             description='List of images for the product variant'),
         model_field='images')
+    translation = graphene.Field(
+        ProductVariantTranslation,
+        language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent("""Represents a version of a product such as
@@ -292,6 +307,9 @@ class Product(CountableDjangoObjectType):
     available_on = graphene.Date(
         deprecation_reason=(
             'availableOn is deprecated, use publicationDate instead'))
+    translation = graphene.Field(
+        ProductTranslation, language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent("""Represents an individual item for sale in the
@@ -438,6 +456,9 @@ class Collection(CountableDjangoObjectType):
     published_date = graphene.Date(
         deprecation_reason=(
             'publishedDate is deprecated, use publicationDate instead'))
+    translation = graphene.Field(
+        CollectionTranslation, language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = "Represents a collection of products."
@@ -458,6 +479,9 @@ class Collection(CountableDjangoObjectType):
         qs = self.products.visible_to_user(info.context.user)
         return gql_optimizer.query(qs, info)
 
+    def resolve_published_date(self, info):
+        return self.publication_date
+
     @classmethod
     def get_node(cls, info, id):
         if info.context:
@@ -468,9 +492,6 @@ class Collection(CountableDjangoObjectType):
             except cls._meta.model.DoesNotExist:
                 return None
         return None
-
-    def resolve_published_date(self, info):
-        return self.publication_date
 
 
 class Category(CountableDjangoObjectType):
@@ -488,6 +509,9 @@ class Category(CountableDjangoObjectType):
         description='List of children of the category.')
     background_image = graphene.Field(
         Image, size=graphene.Int(description='Size of the image'))
+    translation = graphene.Field(
+        CategoryTranslation, language_code=graphene.String(required=True),
+        description='Translation.', resolver=resolve_translation)
 
     class Meta:
         description = dedent("""Represents a single category of products.

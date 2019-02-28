@@ -8,6 +8,8 @@ from .mutations import (
     VoucherRemoveCatalogues, VoucherUpdate)
 from .resolvers import resolve_sales, resolve_vouchers
 from .types import Sale, Voucher
+# FIXME: needs to be last because of Voucher not being in registry otherwise
+from ..translations.mutations import VoucherTranslate
 
 
 class DiscountQueries(graphene.ObjectType):
@@ -55,3 +57,4 @@ class DiscountMutations(graphene.ObjectType):
     voucher_update = VoucherUpdate.Field()
     voucher_catalogues_add = VoucherAddCatalogues.Field()
     voucher_catalogues_remove = VoucherRemoveCatalogues.Field()
+    voucher_translate = VoucherTranslate.Field()
